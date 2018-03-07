@@ -1,11 +1,111 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title><%= title %></title>
+
+<head>
+    <title>
+        <%= title %>
+    </title>
     <link rel='stylesheet' href='/stylesheets/style.css' />
-  </head>
-  <body>
-    <h1><%= title %></h1>
-    <p>Welcome to <%= title %></p>
-  </body>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script> -->
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<style>
+    .title, .taplist {
+        text-align: center;
+    }
+    .taplist:hover {
+        background: gray;
+    }
+    #chatLogs {
+        margin-top: 30px;
+        padding-left: 1%;
+        padding-right: 1%;
+        width: 98%;
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+</style>
+
+<body>
+    <div class="fixed-top">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-12"><h4 class="title"><%= title %></h4></div>
+        </div>
+    </div>
+   <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-4 taplist"><a href="#chatting">chatting</a></div>
+            <div class="col-sm-4 taplist"><a href="#fileManager">fileManager</a></div>
+            <div class="col-sm-4 taplist"><a href="/signout">signout</a></div>
+        </div>
+    </div>
+    </div>
+
+    <!-- <div class="position-static">...</div>
+    <div class="position-relative">...</div>
+    <div class="position-absolute">...</div>
+    <div class="position-fixed">...</div>
+    <div class="position-sticky">...</div> -->
+
+    <div class="position-relative" id="chatLogs"></div>
+
+    <!-- 채팅 -->
+    <div class="fixed-bottom">
+        <form>
+            <input type="text" class="form-control" id="whisper" placeholder="귓속말상대">
+            <input type="text" class="form-control" id="msgForm" placeholder="내용">
+            <button type="submit" class="btn btn-primary">Send</button>
+        </form>
+    </div>
+    <script>
+        $(function () {
+            // socket.io 서버에 접속한다
+            var socket = io();
+
+            // 서버로 자신의 정보를 전송한다.
+            socket.emit("login", {
+                id: '<%= userid%>'
+            });
+
+            // 채팅방입장시 입장한사람의 아이디값을 보여주며 모두에게 입장사실을 알려준다.
+            socket.on("login", function (data) {
+                var chatLogs = $("#chatLogs").text();
+                $("#chatLogs").append("<div><strong>" + data + "</strong> has joined</div>");
+            });
+
+            // 채팅시 메시지를 받을경우
+            socket.on("chat", function (data) {
+                if (data.to === '') data.to = 'ALL';
+                $("#chatLogs").append("<div>" + data.message + " : from <strong>" + data.from + "</strong> to: <strong>" + data.to + "</strong></div>");
+            });
+
+            // Send Event
+            $("form").submit(function (event) {
+                event.preventDefault();
+
+                var msgForm = $("#msgForm").val();
+                var whisper = $("#whisper").val() === '' ? 'ALL' : $("#whisper").val() === '';
+                // if (data.to === '') data.to = 'ALL';
+                $("#chatLogs").append("<div>" + msgForm + " : from <strong> <%=userid%> </strong> to: <strong>" + whisper + "</strong></div>");
+
+                // 메시지전송
+                socket.emit("chat", {
+                    from: '<%= userid%>',
+                    to: whisper,
+                    message: msgForm
+                });
+                $("#msForm").val("");
+            });
+
+        });
+    </script>
+</body>
+
 </html>
