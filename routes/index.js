@@ -2,11 +2,30 @@ var express = require('express');
 var router = express.Router();
 
 var User = require('../models/User');
+var Message = require('../models/Messages');
 var isOAuthenticated = require('../OAuth/oauth').isOAuthenticated;
 
 /* GET home page. */
 router.get('/', isOAuthenticated, function(req, res, next) {
   res.render('index', { title: 'Pil-Web', userid: req.session.user.id });
+});
+
+// 몽고디비에 저장된 채팅메시지리스트틀 불러온다.
+router.post('/chatlist', isOAuthenticated, function(req, res, next) {
+	// 작성자나 받는사람이 본인일경우와, 모두에게 보낼경우
+	var userid = req.session.userid
+	Message.find()
+			.select('-_id from to message')
+			.or([{ from: userid }, { to: userid }, {to: "ALL"}])
+			.sort('-sendTime')
+			.exec(function(err, chatList) {
+				if(err) {
+					console.error(err);
+					res.send(null);
+				} else {
+					res.send(chatList);
+				}
+			});
 });
 
 // signup: Create User
