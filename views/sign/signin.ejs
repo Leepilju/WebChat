@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title><%= title %></title>
+        <link rel='stylesheet' href='/stylesheets/style.css' />
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <style>
+            .signinForm .signBtnStyle {
+                text-align: center;
+                padding-top: 5px;
+            }
+            .signBtnStyle input {
+                margin-left: 3px;
+                margin-right: 3px;
+            }
+        </style>
+    </head>
+    <body>
+        <h1><%= title %></h1>
+        <form action='' method='POST' class='signinForm'>
+            <table>
+                <tr><td>ID</td><td><input type='text' name='id' placeholder='ID'></td></tr>
+                <tr><td>PW</td><td><input type='password' name='pw'></td></tr>
+                <tr><td colspan='2' class='signBtnStyle'><input type='submit' value='singin'><input type='button' class='signup' value='signup'></td></tr>
+            </table>
+        </form>
+    </body>
+    <script>
+        $(function() {
+            $('.signup').on('click', function(event) {
+                location.href = '/signup';
+            });
+        });
+    </script>
+</html>

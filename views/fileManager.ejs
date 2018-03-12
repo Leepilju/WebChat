@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title><%= title %></title>
+        <link rel="stylesheet" href="/stylesheets/style.css" />
+        <link rel="stylesheet" href="/javascripts/codemirror/lib/codemirror.css">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+        
+        <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script> 
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+        <!-- codemirror -->
+        <script src="/javascripts/codemirror/lib/codemirror.js"></script>
+        <link rel="stylesheet" href="/javascripts/codemirror/lib/codemirror.css">
+        <!-- codemirror theme -->
+        <link rel="stylesheet" href="/javascripts/codemirror/theme/dracula.css">
+        <!-- codemirror mode -->
+        <script src="/javascripts/codemirror/mode/javascript/javascript.js"></script>
+        <script src="/javascripts/codemirror/mode/clike/clike.js"></script>
+        <script src="/javascripts/codemirror/mode/python/python.js"></script>
+        <!-- codemirror key -->
+        <script src="/javascripts/codemirror/keymap/sublime.js"></script>
+        
+        
+        <style>
+            .d-flex div spen, .d-flex div a {
+                margin-left: 3px;
+                margin-right: 3px;
+            } 
+            
+            ul, li {
+               list-style-type:none;
+               margin: 0px;
+               padding: 0px;
+           } 
+        </style>
+    </head>
+    <body>
+      <!-- 상단메뉴 -->
+        <div class="d-flex align-items-start">
+            <div><spen class="userID">사용자아이디나중에추가하자..</spen></div>
+            <div><a href="/chatting" class="abtn chattingBtn">chatting</a></div>
+            <div><a href="/fileManager" class="abtn fileManagerBtn">fileManager</a></div>
+            <div><a href="/signout">signout</a></div>
+        </div>
+        
+        
+         <div class="fileManager">
+             <form id="fileForm" action="/fileManager" method="post" enctype="multipart/form-data">
+                 <input type="file" name="files" id="files" webkitdirectory multiple>
+                 <input type="submit">
+             </form>
+
+             <hr>
+             
+             <!-- <ul id="fileList"></ul> -->
+             <% if(files) {%>
+                 <ul>
+                     <% files.forEach(function(file) { %>
+                        <li><a class="files" href=""><%= file %></a></li> 
+                     <% }); %>
+                 </ul>
+             <% } else { %>
+                 <form id="codeForm">
+                     <input type="submit" value="실행">
+                     <input id="saveCode" type="button" value="저장">                    
+                     <input id="fileType" type="hidden" value="">
+                     <textarea id="codemirror-textarea"><%= file%></textarea>
+                 </form>
+                 <textarea id="codemirror-textarea-result"></textarea>
+             <% } %>
+        </div>
+    </body>
+    <script>
+        var filePath = [];
+        // 현재 url값
+        var url = $(location).attr('href');
+
+        $("#files").change(function(event) {
+            // 유사배열이기에 call을 사용
+            Array.prototype.forEach.call(event.target.files, function(element) {
+                filePath.push(element.webkitRelativePath);
+                $fileForm.append("<input type='hidden' name='filePath' class='filePath' value='"+element.webkitRelativePath+"'>");
+            });
+        });
+
+        /*
+            클릭이벤트처리
+            폴더 클릭시 폴더로이동, 파일클릭시 파일의 내용을 보여주도록함.
+        */
+        $(".files").on("click", function(event) {
+            event.preventDefault();
+            console.log($(location).attr('href')+$(this).text());
+            $(location).attr('href', url+'/'+$(this).text());
+        });
+        
+        
+        // 파일에따른 mode 변환
+        var mode = '';
+        var fileType = $("#fileType");
+        if (url.lastIndexOf('.c')) {
+            mode = 'clike';
+        } else if (url.lastIndexOf('.js')) {
+            mode = 'javascript';
+        } else if (url.lastIndexOf('py')) {
+            mode = 'python';
+        } else {
+            editor = "";
+        }
+        
+        
+        // 파일일경우에만 코드미러를 적용
+        var fileCheck = "<%= fileType%>";
+        // 코드의 내용
+        var code = $("#codemirror-textarea");
+        // 코드의 결과값
+        var codeResult = $("#codemirror-textarea-result");
+        
+        if(fileCheck == 'true') {
+            // 코드창
+            var editor = CodeMirror.fromTextArea(code[0], {
+                lineNumbers: true,
+                theme: 'dracula',
+                mode: mode,
+                keyMap: 'sublime',
+                tabSize: 4,
+            });
+            editor.setSize('100%', '600px');
+            
+            
+            // 결과창
+            var resultEditor = CodeMirror.fromTextArea(codeResult[0], {
+                lineNumbers: false,
+                theme: 'dracula',
+                mode: mode,
+                readOnly: true,
+            });
+            resultEditor.setSize('100%', '150px');
+            resultEditor.setValue('실행결과:');
+            
+            // CTRL + S 키로인한 saveCode 클릭이벤트 발생 
+            editor.setOption("extraKeys", {
+                'Ctrl-S': function(cm) {
+                    $('#saveCode').trigger('click'); // 클릭이벤트 발생시키기
+                 }
+            });
+        }
+        
+        
+        // 코드실행결과
+        $("#codeForm").submit(function(event) {
+            event.preventDefault();
+            $('#saveCode').trigger('click'); // 클릭이벤트 발생시키기
+            $.ajax({
+                type: 'get',
+                url: url.replace('fileManager', 'run'),
+                success: function(result) {
+                    resultEditor.getDoc().setValue("실행결과:\n"+result.result);
+                    
+                },
+                error: function(err) {
+                    console.log("코드실행 ERROR:", err);
+                }
+            });
+        });
+        
+        
+        // 코드저장(수정) 
+        $("#saveCode").on("click", function(event) {
+            $.ajax({
+                type: 'put',
+                url: url,
+                dataType: 'json',
+                data: {code: editor.getValue()},
+                success: function(result) {
+                    console.log(result.result);
+                },
+                error: function(err) {
+                    console.log("ERROR:", err);
+                }
+            });
+        });           
+
+        
+    </script>   
+</html>

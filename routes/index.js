@@ -3,106 +3,73 @@ var router = express.Router();
 
 var User = require('../models/User');
 var Message = require('../models/Messages');
-var isOAuthenticated = require('../OAuth/oauth').isOAuthenticated;
+var isAuthenticated = require('../middleware/isAuthenticated');
+var crypto = require('../util/crypto');
 
 /* GET home page. */
-router.get('/', isOAuthenticated, function(req, res, next) {
-  res.render('index', { title: 'Pil-Web', userid: req.session.user.id });
+router.get('/', isAuthenticated, function(req, res, next) {
+  res.render('index', { title: 'Web', userid: req.session.user.id });
 });
 
-// 몽고디비에 저장된 채팅메시지리스트틀 불러온다.
-router.post('/chatlist', isOAuthenticated, function(req, res, next) {
-	// 작성자나 받는사람이 본인일경우와, 모두에게 보낼경우
-	var userid = req.session.userid
-	Message.find()
-			.select('-_id from to message')
-			.or([{ from: userid }, { to: userid }, {to: "ALL"}])
-			.sort('-sendTime')
-			.exec(function(err, chatList) {
-				if(err) {
-					console.error(err);
-					res.send(null);
-				} else {
-					res.send(chatList);
-				}
-			});
-});
-
-// signup: Create User
-router.post('/signup', function(req, res, next) {
-	User.create({
-		id: req.body.id,
-		pw: req.body.pw
-	}, function(err, user) {
-		if (err) {
-			if(err.message.indexOf('duplicate key error') !== -1) {
-				console.error(err);
-			}
-			return next(err);
-    }
-    req.session.user = user;
-		res.redirect('/');
-	});
-});
-
-router.get('/signup', function(req, res, next) {
-  res.render('signup', { title: "회원가입"});
-});
-
-// User All List
-router.get('/', function(req, res, next) {
-	User.find({}, function(err, users) {
-		if (err) {
-			return next(err);
-		}
-		res.send(users);
-	});
-});
-
-// User All List
+// 로그인페이지
 router.get('/signin', function(req, res, next) {
-	res.render('signin', {title: "로그인"});
+	res.render('sign/signin', {title: '로그인'});
 });
 
-
-// signin(login)
+// 로그인
 router.post('/signin', function(req, res, next) {
-	var session = req.session;
-	User.findOne({
-		id: req.body.id,
-		pw: req.body.pw
-	}, function(err, user) {
-		if (err) return next(err);
-		if (!user) {
-			err = new Error('Check id And pw');
-			err.status = 401;
-			return next(err);
-		}
-    session.user = user;
-    res.redirect('/');
-	});
+    /*
+        1. 해당 id를 찾는다.
+        2. 해당 id에따른 salt값을 찾아온다
+        3. 사용자에게 받은 패스워드를 salt와 함께 압호화해 비교한다.
+        4. 결과값이 나올경우 로그인성공
+    */
+    User.findOne()
+        .select('-_id salt')
+        .where('id').equals(req.body.id)
+        .then(result => {
+            return User.findOne()
+                .select('salt id')
+                .where('id').equals(req.body.id)
+                .where('pw').equals(crypto.sha512(req.body.pw, result.salt).pw)
+                .where('salt');
+            })
+        .then((result) => {
+            if (result._id) {
+                req.session.user = result;
+                return res.redirect('/');
+            }
+            res.send("ID or PW 확인");
+        })
+        .catch(err => {
+            if (err) return next(err);
+        });
+
 });
 
-// modify User
-router.put('/', isOAuthenticated, function(req, res, next) {
-	User.findOneAndUpdate({
-		id: req.body.id,	// old id
-		pw: req.body.pw	// old pw
-	}, {
-		id: req.body.newId,	//new id
-		pw: req.body.newPw	//new pw
-	}, {
-		new: true // result: oldID, oldPW -> newID, newPW
-	}, function(err, result) {
-		if (err) return next(err);
-		res.send(result);
-	});
+// 회원가입페이지
+router.get('/signup', function(req, res, next) {
+	res.render('sign/signup', {title: '회원가입'});
 });
 
-// signout(logout)
-router.get('/signout', isOAuthenticated, function(req, res, next) {
-  delete req.session.user;
-  res.redirect('/');
+// 회원가입
+router.post('/signup', function(req, res, next) {
+    // 사용자의 id값과, 해쉬화된 비밀번호, salt값을 함께 저장하도록한다.
+    var userInfo = Object.assign({'id': req.body.id}, crypto.saltHashPassword(req.body.pw));
+    User.create(userInfo, function(err, result) {
+        if (err) {
+            return next(err);
+        }
+        // 로그인페이지로이동
+        res.redirect('/signin');
+    });
+});
+
+// 로그아웃
+router.get('/signout', isAuthenticated, function(req, res, next) {
+    // 세션에 저장된 회원의 정보를 삭제한다.
+	delete req.session.user;
+    res.redirect('/signin');
 });
 
 module.exports = router;

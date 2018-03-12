@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title><%= title %></title>
+        <link rel="stylesheet" href="/stylesheets/style.css" />
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+        <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script> 
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="/socket.io/socket.io.js"></script>
+        <style>
+            .d-flex div spen, .d-flex div a {
+                margin-left: 3px;
+                margin-right: 3px;
+            } 
+            .fileManager {
+                display: none;
+            }
+        </style>
+    </head>
+    <body>
+      <!-- 상단메뉴 -->
+        <div class="d-flex align-items-start">
+            <div><spen class="userID"><%= userid %></spen></div>
+            <div><a href="/chatting" class="abtn chattingBtn">chatting</a></div>
+            <div><a href="/fileManager" class="abtn fileManagerBtn">fileManager</a></div>
+            <div><a href="/signout">signout</a></div>
+        </div>
+        
+        <!-- 채팅내역 -->
+        <!-- TODO: 채팅리스트 스크롤 해야함-->
+        <div class="d-flex align-items-center flex-column chat" id="chatLogs"></div>
+
+        <!-- 메시지보내기 -->
+        <div class="d-flex align-items-end fixed-bottom chat">
+            <form id="chatForm" class="container-fluid">
+                <div class="row chat">
+                    <input type="text" class="col-sm-1" id="whisper" placeholder="ALL">
+                    <input type="text" class="col-sm-10" id="msgForm" placeholder="내용">
+                    <button type="submit" class="col-sm-1">Send</button>
+                </div>
+            </form>
+        </div>       
+    </body>
+    <!-- 채팅 -->
+    <!-- <script src="/javascripts/chat.js"></script> -->
+    <script>
+     $(function() {
+        // socket서버에 접속
+        var socket = io();
+        var userID = $(".userID").text();
+
+        // 본인의 정보를 서버로 전달
+        socket.emit("login", {
+            id: userID
+        });
+
+        // 채팅방 입장시
+        socket.on("login", function(data) {
+           // 내용추가
+           $("#chatLogs").append("<div class='chat'><strong>" + data + "</strong> 입장</div>");
+        });
+
+        /*
+            채팅리시트는 로딩시 ajax를 통하여 불러오도록한다.
+            시간에따른 오름차정렬, 전체메시지와, 본인이 보낸 메시지, 귓속말 받은 메시지를 불러오도록한다.
+        */
+         
+        $.ajax({
+            type: 'get',
+            url: 'http://leepil.run.goorm.io/chatting/list',
+            dataType: 'json',
+            success: function(result) {
+                if(!result) $("#chatLogs").append("<div class='chat'><strong>채팅목록을 가지고오는데 실패</strong></div>");
+                else {
+                    result.forEach(function(element) {
+                        $("#chatLogs").append("<div class='p-2 chat'>" + element.message + " : from <strong>" + element.from + "</strong> to: <strong>" + element.to + "</strong></div>");
+                    });
+                }
+            },
+            error: function(err) {
+                console.log("error");
+                console.log(err);
+                $("#chatLogs").append("<div class='chat'><strong>채팅목록을 가지고오는데 실패</strong></div>");
+            }
+        });
+
+        // 채팅메시지
+        socket.on("chat", function(data) {
+            // undefind && null 모두를 잡기위하여 == 사용
+            if(data.to == null || data.to === "") data.to = "ALL";
+            $("#chatLogs").append("<div class='p-2 chat'>" + data.message + " : from <strong>" + data.from + "</strong> to: <strong>" + data.to + "</strong></div>");
+        });
+
+        // 채팅메시지 전송
+        $("#chatForm").submit(function(event) {
+            // 기본 폼태그의 이벤트를 사용하지않음
+            event.preventDefault();
+
+            var msgForm = $("#msgForm");
+            var whisper = $("#whisper");
+
+            // undefind && null 모두를 잡기위하여 == 사용
+            var msg = {
+                from: userID,
+                to: whisper.val() === '' || whisper == null ? 'ALL' : whisper.val(),
+                message: msgForm.val()
+            };
+
+            // 본인이보낸 메시지 확인
+            $("#chatLogs").append("<div class='chat'>" + msgForm.val() + " : from <strong>"+userID+"</strong> to: <strong>" + msg.to + "</strong></div>");
+            // 서버로 메시지전송
+            socket.emit("chat", msg);
+            //메시지내용 초기화
+            msgForm.val("");
+        });
+    });   
+    </script>
+</html>
+
+

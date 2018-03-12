@@ -5,5 +5,5 @@ var MessageSchema = new mongoose.Schema({
     message: String,
 	sendTime: { type: Date, default: Date.now }
 });
-mongoose.model('Message', MessageSchema);
-module.exports = mongoose.model('Message');
+mongoose.model('Messages', MessageSchema);
+module.exports = mongoose.model('Messages');
