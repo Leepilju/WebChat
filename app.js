@@ -1,24 +1,25 @@
-var http = require('http');
-var express = require('express');
-var path = require('path');
-var logger = require('morgan');
-var bodyParser = require('body-parser');
-var session = require('express-session');
+const http = require('http');
+const express = require('express');
+const path = require('path');
+const logger = require('morgan');
+const bodyParser = require('body-parser');
+const session = require('express-session');
 
-var mongodb = require('./database/mongodb');
+const mongodb = require('./database/mongodb');
 
-var index = require('./routes/index');
-var chatting = require('./routes/chatting');
-var fileManager = require('./routes/fileManager');
-var run = require('./routes/run');
-var app = express();
-var server = http.createServer(app);
+const index = require('./routes/index');
+const chatting = require('./routes/chatting');
+const fileManager = require('./routes/fileManager');
+const run = require('./routes/run');
+const app = express();
+const server = http.createServer(app);
 
 /*
     채팅핸들러 모듈화
     http서버를 socket서버로 업그래이드하기위하여 매개변수로 넘겨줌 
 */
-var io = require('./middleware/chat').chat(server);
+const io = require('./middleware/chat').chat(server);
+const ioBash = require('./middleware/bash').bash(server);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -45,20 +46,21 @@ app.use('/fileManager', fileManager);
 app.use('/run', run);
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  var err = new Error('Not Found');
+app.use((req, res, next) => {
+  const err = new Error('Not Found');
   err.status = 404;
   next(err);
 });
 
 // error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
+app.use((err, req, res, next) => {
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-  // render the error page
   res.status(err.status || 500);
+    
+  // 404의경우에는 로그를 출력하지 않도록한다.
+  if(err.status !== 404) console.log(err);
   res.send('error');
 });
 

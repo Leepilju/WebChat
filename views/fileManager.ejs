@@ -20,7 +20,8 @@
         <script src="/javascripts/codemirror/mode/javascript/javascript.js"></script>
         <script src="/javascripts/codemirror/mode/clike/clike.js"></script>
         <script src="/javascripts/codemirror/mode/python/python.js"></script>
-        <!-- codemirror key -->
+        <script src="/javascripts/codemirror/mode/shell/shell.js"></script>
+        <!-- codemirror keymap -->
         <script src="/javascripts/codemirror/keymap/sublime.js"></script>
         
         
@@ -49,7 +50,7 @@
         
          <div class="fileManager">
              <form id="fileForm" action="/fileManager" method="post" enctype="multipart/form-data">
-                 <input type="file" name="files" id="files" webkitdirectory multiple>
+                 <input type="file" name="files" id="files" multiple>
                  <input type="submit">
              </form>
 
@@ -64,11 +65,13 @@
                  </ul>
              <% } else { %>
                  <form id="codeForm">
+                     입력값: <input id="inputValue" type="text" placeholder="Input stdin 1, 2, 3"><br>
                      <input type="submit" value="실행">
                      <input id="saveCode" type="button" value="저장">                    
                      <input id="fileType" type="hidden" value="">
                      <textarea id="codemirror-textarea"><%= file%></textarea>
                  </form>
+                 <br>
                  <textarea id="codemirror-textarea-result"></textarea>
              <% } %>
         </div>
@@ -78,13 +81,14 @@
         // 현재 url값
         var url = $(location).attr('href');
 
-        $("#files").change(function(event) {
-            // 유사배열이기에 call을 사용
-            Array.prototype.forEach.call(event.target.files, function(element) {
-                filePath.push(element.webkitRelativePath);
-                $fileForm.append("<input type='hidden' name='filePath' class='filePath' value='"+element.webkitRelativePath+"'>");
-            });
-        });
+        // $("#files").change(function(event) {
+        //     var $fileForm = $("#fileForm");
+        //     // 유사배열이기에 call을 사용
+        //     Array.prototype.forEach.call(event.target.files, function(element) {
+        //         filePath.push(element.webkitRelativePath);
+        //         $fileForm.append("<input type='hidden' name='filePath' class='filePath' value='"+element.webkitRelativePath+"'>");
+        //     });
+        // });
 
         /*
             클릭이벤트처리
@@ -92,7 +96,7 @@
         */
         $(".files").on("click", function(event) {
             event.preventDefault();
-            console.log($(location).attr('href')+$(this).text());
+            // console.log($(location).attr('href')+$(this).text());
             $(location).attr('href', url+'/'+$(this).text());
         });
         
@@ -113,6 +117,8 @@
         
         // 파일일경우에만 코드미러를 적용
         var fileCheck = "<%= fileType%>";
+        console.log(typeof fileCheck);
+        console.log(fileCheck);
         // 코드의 내용
         var code = $("#codemirror-textarea");
         // 코드의 결과값
@@ -134,7 +140,7 @@
             var resultEditor = CodeMirror.fromTextArea(codeResult[0], {
                 lineNumbers: false,
                 theme: 'dracula',
-                mode: mode,
+                mode: 'shell',
                 readOnly: true,
             });
             resultEditor.setSize('100%', '150px');
@@ -149,16 +155,21 @@
         }
         
         
+        
+        
         // 코드실행결과
         $("#codeForm").submit(function(event) {
             event.preventDefault();
             $('#saveCode').trigger('click'); // 클릭이벤트 발생시키기
+            console.log($('#inputValue').val());
             $.ajax({
-                type: 'get',
+                type: 'post',
                 url: url.replace('fileManager', 'run'),
+                data: {
+                    stdin: $('#inputValue').val()
+                },
                 success: function(result) {
                     resultEditor.getDoc().setValue("실행결과:\n"+result.result);
-                    
                 },
                 error: function(err) {
                     console.log("코드실행 ERROR:", err);

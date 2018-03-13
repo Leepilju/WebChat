@@ -1,3 +1,5 @@
 # modules
 node_modules/
 codemirror/
+npm-debug.log
+*.out

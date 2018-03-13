@@ -4,3 +4,4 @@ console.log("b");
 }(1234));
 
 console.log("aa");
+console.log("test");

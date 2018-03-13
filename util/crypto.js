@@ -1,12 +1,12 @@
 // 암호화관련모듈
-var crypto = require('crypto');
+const crypto = require('crypto');
 
 /**
  * 임의문자열(salt)을 생성하여준다 
  * @function
  * @param {number} length - 임의문자열의 길이 
  */
-var genRandomString = function(length) {
+const genRandomString = length => {
     return crypto.randomBytes(Math.ceil(length/2)) //randomBytes 임의문자열을 생성해주도록한다.
             .toString('hex')  // 인코딩방식
             .slice(0, length);   // 필요한 문자수를 반환
@@ -19,7 +19,7 @@ var genRandomString = function(length) {
  * @param {string} password - 사용자에게 받아온 비밀번호값
  * @param {string} salt - 만들어진 임의문자열
  */
-var sha512 = function(password, salt){
+const sha512 = (password, salt) => {
     var hash = crypto.createHmac('sha512', salt); // sha512로 해쉬화
     hash.update(password); // 비밀번호를 업데이트한다.
     var value = hash.digest('hex');
@@ -34,10 +34,10 @@ var sha512 = function(password, salt){
     };
 };
 
-function saltHashPassword(userpassword) {
+const saltHashPassword = userpassword => {
     var salt = genRandomString(16); // 임의문자열의 길이
     return sha512(userpassword, salt);
-}
+};
 
-module.exports.altHashPassword = saltHashPassword;
+module.exports.saltHashPassword = saltHashPassword;
 module.exports.sha512 = sha512;
