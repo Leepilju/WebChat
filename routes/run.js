@@ -35,6 +35,8 @@ router.post('/*', isAuthenticated, (req, res, next) => {
         default:
             res.send(new Error('실행불가능'));
     }
+    
+    // c, c++
     if(filePath.lastIndexOf('.c') !== -1 || filePath.lastIndexOf('.C') !== -1) {
          // 컴파일후, 파일실행
          execa
@@ -60,7 +62,7 @@ router.post('/*', isAuthenticated, (req, res, next) => {
         .catch(err => {
              res.send({result: err.stderr});
         });
-    } else {
+    } else { // js, python
         let run = execa.shell(fileCompile);
         run.stdin.write(stdin);
         run.stdin.end();

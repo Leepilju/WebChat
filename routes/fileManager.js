@@ -50,6 +50,33 @@ router.get('/*', isAuthenticated, (req, res, next) => {
 
 //파일업로드
 router.post('/', isAuthenticated, multer.array('files'), (req, res, next) => {
+    let execa = require('execa');
+    let files = req.files;
+    let decompress = '';
+    
+    // .zip, .tar 파일일경우에만 압축을 푼이후, 파일삭제를 진행하도록 한다.
+    files.forEach((file) => {
+        if(file.mimetype === 'application/x-tar' || file.mimetype === 'application/zip') {
+            switch(file.mimetype) {
+                case 'application/x-tar': 
+                    decompress = 'tar -xf ' + file.path + ' -C ' + file.path.replace(path.basename(file.path), '');
+                break;
+                case 'application/zip':
+                    decompress = 'unzip '+file.path +' -d ' + file.path.replace(path.basename(file.path), '');
+                break;
+            }
+            execa.shell(decompress)
+            .then(result => {
+                return execa.shell('rm -r '+file.path);
+            })
+            .then(result => {
+            })
+            .catch(err => {
+                console.error(err);
+                return next(err);
+            });
+        }
+    });
     res.redirect('/fileManager');
 });
 

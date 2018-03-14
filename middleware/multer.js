@@ -1,7 +1,8 @@
 module.exports = (dir) => {
-    var multer = require('multer');
+    const execa = require('execa');
+    const multer = require('multer');
     // 업로드 스토리지, 이름 관리
-    var storage = multer.diskStorage({
+    const storage = multer.diskStorage({
         destination: (req, file, callback) => {
             callback(null, dir+'/uploads');
         },

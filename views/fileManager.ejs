@@ -26,16 +26,31 @@
         
         
         <style>
-            .d-flex div spen, .d-flex div a {
-                margin-left: 3px;
-                margin-right: 3px;
-            } 
+            html, body {
+                height:100%; margin: 0;
+            }
+            
+            .chat-box {
+                height: 100%;
+                position: relative;
+            }
+            
+            .chat {
+                position: absolute;
+                top: 56px;
+                left: 0;
+                right: 0;
+                bottom:46px;
+            }
+            
             
             ul, li {
                list-style-type:none;
                margin: 0px;
                padding: 0px;
-           } 
+            } 
+            
+
         </style>
     </head>
     <body>
@@ -64,32 +79,33 @@
         </div> -->
         
         
-         <div class="fileManager">
-             <form id="fileForm" action="/fileManager" method="post" enctype="multipart/form-data">
-                 <input type="file" name="files" id="files" multiple>
-                 <input type="submit">
-             </form>
+<div class="chat-box">
+    <div class="chat">
+        <form id="fileForm" action="/fileManager" method="post" enctype="multipart/form-data">
+            <input type="file" name="files" id="files" multiple>
+            <input type="submit">
+        </form>
+        <hr>
+        <% if(files) {%>
+            <ul>
+            <% files.forEach((file) => { %>
+            <li><a class="files" href=""><%= file %></a></li> 
+            <% }); %>
+            </ul>
+            <% } else { %>
+            <form id="codeForm">
+                입력값: <input id="inputValue" type="text" placeholder="Input stdin 1, 2, 3"><br>
+                <input type="submit" value="실행">
+                <input id="saveCode" type="button" value="저장">                    
+                <input id="fileType" type="hidden" value="">
+                <textarea id="codemirror-textarea"><%= file%></textarea>
+            </form>
+            <br>
+            <textarea id="codemirror-textarea-result"></textarea>
+        <% } %>
+    </div>               
+</div>
 
-             <hr>
-             
-             <% if(files) {%>
-                 <ul>
-                     <% files.forEach((file) => { %>
-                        <li><a class="files" href=""><%= file %></a></li> 
-                     <% }); %>
-                 </ul>
-             <% } else { %>
-                 <form id="codeForm">
-                     입력값: <input id="inputValue" type="text" placeholder="Input stdin 1, 2, 3"><br>
-                     <input type="submit" value="실행">
-                     <input id="saveCode" type="button" value="저장">                    
-                     <input id="fileType" type="hidden" value="">
-                     <textarea id="codemirror-textarea"><%= file%></textarea>
-                 </form>
-                 <br>
-                 <textarea id="codemirror-textarea-result"></textarea>
-             <% } %>
-        </div>
     </body>
     <script>
         var filePath = [];
@@ -122,8 +138,6 @@
         
         // 파일일경우에만 코드미러를 적용
         var fileCheck = "<%= fileType%>";
-        console.log(typeof fileCheck);
-        console.log(fileCheck);
         // 코드의 내용
         var code = $("#codemirror-textarea");
         // 코드의 결과값
@@ -166,7 +180,6 @@
         $("#codeForm").submit(function(event) {
             event.preventDefault();
             $('#saveCode').trigger('click'); // 클릭이벤트 발생시키기
-            console.log($('#inputValue').val());
             $.ajax({
                 type: 'post',
                 url: url.replace('fileManager', 'run'),

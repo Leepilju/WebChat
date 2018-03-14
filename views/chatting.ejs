@@ -10,9 +10,39 @@
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
         <script src="/socket.io/socket.io.js"></script>
         <style>
+            html, body {
+                height:100%; margin: 0;
+            }
+            
+            .chat-box {
+                height: 100%;
+                position: relative;
+            }
+            
             .chat {
-                margin-top: 10px;
-                margin-bottom: 45px;
+                position: absolute;
+                top: 56px;
+                left: 0;
+                right: 0;
+                bottom:46px;
+            }
+            
+            #chatLogs {
+                height: 100%;
+                overflow-x: hidden;
+                overflow-y: auto;
+            }
+            
+            .container-fluid {
+                padding-left: 8px;
+                padding-right: 0px;
+            }
+
+            @media ( max-width: 575px ) {
+                .chat {
+                    top: 176px;
+                    bottom: 106px;
+                }
             }
         </style>
     </head>
@@ -35,12 +65,14 @@
             </ul>
         </nav>
         
-        <!-- 채팅내역 -->
-        <div class="container-fluid chat">
-            <div id="chatLogs">
-                
+        <div class="chat-box">
+            <div class="container-fluid chat">
+                <div id="chatLogs">
+
+                </div>
             </div>
         </div>
+
 
         <!-- 채팅입력창 -->
         <form class="navbar navbar-expand-sm bg-dark navbar-dark fixed-bottom" id="chatForm">
@@ -79,7 +111,7 @@
                 if(!result) $("#chatLogs").append("<div class='chat'><strong>채팅목록을 가지고오는데 실패</strong></div>");
                 else {
                     result.forEach(function(element) {
-                        $("#chatLogs").append("<div>"+element.from+": " + element.message + ", to: <strong>" + element.to + "</strong></div>");
+                        $("#chatLogs").append("<div>"+element.from+": " + element.message + ", to: " + element.to + "</div>");
                     });
                 }
             },
@@ -92,7 +124,7 @@
         socket.on("chat", function(data) {
             // undefind && null 모두를 잡기위하여 == 사용
             if(data.to == null || data.to === "") data.to = "ALL";
-            $("#chatLogs").append("<div>"+data.from+": " + data.message + ", to: <strong>" + data.to + "</strong></div>");
+            $("#chatLogs").append("<div>"+data.from+": " + data.message + ", to: " + data.to + "</div>");
         });
 
         // 채팅메시지 전송
@@ -112,13 +144,14 @@
 
             // 본인이보낸 메시지 확인
             $("#chatLogs").append("<div>"+userID+": " + msgForm.val() + ", to: <strong>" + msg.to + "</strong></div>");
-            
+         
             // 서버로 메시지전송
             socket.emit("chat", msg);
             //메시지내용 초기화
             msgForm.val("");
         });
     });   
+        
     </script>
 </html>
 
