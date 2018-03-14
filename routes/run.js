@@ -1,13 +1,14 @@
 const express = require('express');
 const router = express.Router();
 
+const isAuthenticated = require('../middleware/isAuthenticated');
 const fs = require('fs');
 const path = require('path');
 const url = require('url');
 const execa = require('execa');
 
 // 파일실행
-router.post('/*', (req, res, next) => {
+router.post('/*', isAuthenticated, (req, res, next) => {
     const stdin = req.body.stdin.replace(',', '\n');
     // 코드의 실행결과를 보고싶을 경우
     let filePath = path.dirname(__dirname)+'/uploads'+ url.parse(req.originalUrl).pathname.replace('/run', '');

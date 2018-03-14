@@ -19,7 +19,6 @@ const server = http.createServer(app);
     http서버를 socket서버로 업그래이드하기위하여 매개변수로 넘겨줌 
 */
 const io = require('./middleware/chat').chat(server);
-const ioBash = require('./middleware/bash').bash(server);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -64,6 +63,6 @@ app.use((err, req, res, next) => {
   res.send('error');
 });
 
-server.listen(app.get('port'), function() {
+server.listen(app.get('port'), () => {
     console.log('Open Serve Port:', app.get('port'));
 });

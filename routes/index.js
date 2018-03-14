@@ -1,23 +1,23 @@
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
 
-var User = require('../models/User');
-var Message = require('../models/Messages');
-var isAuthenticated = require('../middleware/isAuthenticated');
-var crypto = require('../util/crypto');
+const User = require('../models/User');
+const Message = require('../models/Messages');
+const isAuthenticated = require('../middleware/isAuthenticated');
+const crypto = require('../util/crypto');
 
 /* GET home page. */
-router.get('/', isAuthenticated, function(req, res, next) {
+router.get('/', isAuthenticated, (req, res, next) => {
   res.render('index', { title: 'Web', userid: req.session.user.id });
 });
 
 // 로그인페이지
-router.get('/signin', function(req, res, next) {
+router.get('/signin', (req, res, next) => {
 	res.render('sign/signin', {title: '로그인'});
 });
 
 // 로그인
-router.post('/signin', function(req, res, next) {
+router.post('/signin', (req, res, next) => {
     /*
         1. 해당 id를 찾는다.
         2. 해당 id에따른 salt값을 찾아온다
@@ -48,15 +48,15 @@ router.post('/signin', function(req, res, next) {
 });
 
 // 회원가입페이지
-router.get('/signup', function(req, res, next) {
+router.get('/signup', (req, res, next) => {
 	res.render('sign/signup', {title: '회원가입'});
 });
 
 // 회원가입
-router.post('/signup', function(req, res, next) {
+router.post('/signup', (req, res, next) => {
     // 사용자의 id값과, 해쉬화된 비밀번호, salt값을 함께 저장하도록한다.
-    var userInfo = Object.assign({'id': req.body.id}, crypto.saltHashPassword(req.body.pw));
-    User.create(userInfo, function(err, result) {
+    const userInfo = Object.assign({'id': req.body.id}, crypto.saltHashPassword(req.body.pw));
+    User.create(userInfo, (err, result) => {
         if (err) {
             return next(err);
         }
@@ -66,7 +66,7 @@ router.post('/signup', function(req, res, next) {
 });
 
 // 로그아웃
-router.get('/signout', isAuthenticated, function(req, res, next) {
+router.get('/signout', isAuthenticated, (req, res, next) => {
     // 세션에 저장된 회원의 정보를 삭제한다.
 	delete req.session.user;
     res.redirect('/signin');

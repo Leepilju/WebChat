@@ -1,4 +1,7 @@
+
 # Node.js를 활용한 채팅 & 웹 코드실행기
+  
+  
 ### run
 `codemirror`- 다운로드후, public/javascript/안에 위치시켜주도록한다.  
 `service mongodb start` - 몽고디비를 시작시켜준다.  
@@ -25,6 +28,8 @@
     - bootstrap4
     - css
     - html
+    - marked(markdown문법을 ejs템플릿엔진에서 불러오기위하여 사용)  
+    marked를 설치한후, public/jvascripts/ 안에 위치시켜준다.
     
 ## 구현기능
 - 모든기능은 로그인 이후에 사용이 가능 만약 로그인을 하지 않을 경우, 로그인창으로 이동
@@ -46,7 +51,6 @@
 
 ## TODO
 - 압축파일업로드시 압출풀어서 디랙토리구조 생성
-- ES5 OR ES6 문법통일
 - 파일리스트  
 a/b/a.c  
 a/b/b.py  

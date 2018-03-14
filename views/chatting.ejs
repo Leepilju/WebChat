@@ -10,41 +10,46 @@
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
         <script src="/socket.io/socket.io.js"></script>
         <style>
-            .d-flex div spen, .d-flex div a {
-                margin-left: 3px;
-                margin-right: 3px;
-            } 
-            .fileManager {
-                display: none;
+            .chat {
+                margin-top: 10px;
+                margin-bottom: 45px;
             }
         </style>
     </head>
     <body>
       <!-- 상단메뉴 -->
-        <div class="d-flex align-items-start">
-            <div><spen class="userID"><%= userid %></spen></div>
-            <div><a href="/chatting" class="abtn chattingBtn">chatting</a></div>
-            <div><a href="/fileManager" class="abtn fileManagerBtn">fileManager</a></div>
-            <div><a href="/signout">signout</a></div>
-        </div>
+         <nav class="navbar navbar-expand-sm bg-dark navbar-dark fixed-top">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a href="/" class="nav-link userID" ><%= userid%></a>
+                </li>
+                <li class="nav-item">
+                    <a href="/chatting" class="nav-link active">chatting</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/fileManager" class="nav-link">fileManager</a>
+                </li>
+                 <li class="nav-item">
+                    <a href="/signout" class="nav-link">signout</a>
+                </li>
+            </ul>
+        </nav>
         
         <!-- 채팅내역 -->
-        <!-- TODO: 채팅리스트 스크롤 해야함-->
-        <div class="d-flex align-items-center flex-column chat" id="chatLogs"></div>
+        <div class="container-fluid chat">
+            <div id="chatLogs">
+                
+            </div>
+        </div>
 
-        <!-- 메시지보내기 -->
-        <div class="d-flex align-items-end fixed-bottom chat">
-            <form id="chatForm" class="container-fluid">
-                <div class="row chat">
-                    <input type="text" class="col-sm-1" id="whisper" placeholder="ALL">
-                    <input type="text" class="col-sm-10" id="msgForm" placeholder="내용">
-                    <button type="submit" class="col-sm-1">Send</button>
-                </div>
-            </form>
-        </div>       
+        <!-- 채팅입력창 -->
+        <form class="navbar navbar-expand-sm bg-dark navbar-dark fixed-bottom" id="chatForm">
+            <input class="col-lg-1" type="text"  placeholder="User" id="whisper">
+            <input class="col-lg-10" type="text" placeholder="Message" id="msgForm">
+            <button class="col-lg-1" type="submit">Send</button>        
+        </form>
+        
     </body>
-    <!-- 채팅 -->
-    <!-- <script src="/javascripts/chat.js"></script> -->
     <script>
      $(function() {
         // socket서버에 접속
@@ -59,14 +64,13 @@
         // 채팅방 입장시
         socket.on("login", function(data) {
            // 내용추가
-           $("#chatLogs").append("<div class='chat'><strong>" + data + "</strong> 입장</div>");
+           $("#chatLogs").append("<div><strong>" + data + "</strong> 입장</div>");
         });
 
         /*
             채팅리시트는 로딩시 ajax를 통하여 불러오도록한다.
             시간에따른 오름차정렬, 전체메시지와, 본인이 보낸 메시지, 귓속말 받은 메시지를 불러오도록한다.
         */
-         
         $.ajax({
             type: 'get',
             url: 'http://leepil.run.goorm.io/chatting/list',
@@ -75,14 +79,12 @@
                 if(!result) $("#chatLogs").append("<div class='chat'><strong>채팅목록을 가지고오는데 실패</strong></div>");
                 else {
                     result.forEach(function(element) {
-                        $("#chatLogs").append("<div class='p-2 chat'>" + element.message + " : from <strong>" + element.from + "</strong> to: <strong>" + element.to + "</strong></div>");
+                        $("#chatLogs").append("<div>"+element.from+": " + element.message + ", to: <strong>" + element.to + "</strong></div>");
                     });
                 }
             },
             error: function(err) {
-                console.log("error");
-                console.log(err);
-                $("#chatLogs").append("<div class='chat'><strong>채팅목록을 가지고오는데 실패</strong></div>");
+                $("#chatLogs").append("<div><strong>채팅목록을 가지고오는데 실패</strong></div>");
             }
         });
 
@@ -90,7 +92,7 @@
         socket.on("chat", function(data) {
             // undefind && null 모두를 잡기위하여 == 사용
             if(data.to == null || data.to === "") data.to = "ALL";
-            $("#chatLogs").append("<div class='p-2 chat'>" + data.message + " : from <strong>" + data.from + "</strong> to: <strong>" + data.to + "</strong></div>");
+            $("#chatLogs").append("<div>"+data.from+": " + data.message + ", to: <strong>" + data.to + "</strong></div>");
         });
 
         // 채팅메시지 전송
@@ -109,7 +111,8 @@
             };
 
             // 본인이보낸 메시지 확인
-            $("#chatLogs").append("<div class='chat'>" + msgForm.val() + " : from <strong>"+userID+"</strong> to: <strong>" + msg.to + "</strong></div>");
+            $("#chatLogs").append("<div>"+userID+": " + msgForm.val() + ", to: <strong>" + msg.to + "</strong></div>");
+            
             // 서버로 메시지전송
             socket.emit("chat", msg);
             //메시지내용 초기화

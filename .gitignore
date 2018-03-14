@@ -1,5 +1,6 @@
 # modules
 node_modules/
 codemirror/
+marked/
 npm-debug.log
 *.out
