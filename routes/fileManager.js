@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
 
+// 파일경로를 표시하기위하여 사용한 모듈
+const dir = require('node-dir').files;
+
 const isAuthenticated = require('../middleware/isAuthenticated');
 const path = require('path');
 const fs = require('fs');
@@ -20,6 +23,11 @@ router.get('/*', isAuthenticated, (req, res, next) => {
         ex) url: baseUrl/a.js 일경우
             web/uploads/a.js 로 바꾸어준다
     */
+    
+    // dir('../uploads', (err, result) => {
+    //     res.render('fileManager', {title: 'fileManager', userid: req.session.user.id, files: null, file: result, fileType: true});
+    // });
+    
     const filePath = filePathFun(req);
     fs.stat(filePath, (err, file) => {
         if(err) return next(err);

@@ -5,7 +5,7 @@
 ### run
 `codemirror`- 다운로드후, public/javascript/안에 위치시켜주도록한다.  
 `service mongodb start` - 몽고디비를 시작시켜준다.  
-`cd /web && npm install && npm start`- 서버실행
+`npm install && npm start`- 서버실행
 
 ### Stack
 - back-end
@@ -15,6 +15,7 @@
 	    - mongoose(몽고디비와 ODM)
 	    - multer(파일업로드)
         - execa(자식프로세스를 위하여 사용 [코드실행, 압축파일])
+        - node-dir(파일의 경로를 표시하기위하여 사용-예정)
 	    - baseModule
 	        - fs(파일업로드, 및 불러오기 관련 사용)
 	        - path(파일 및 폴더의 경로를 불러오기위하여 사용)
@@ -54,7 +55,8 @@
 - 파일리스트  
 a/b/a.c  
 a/b/b.py  
-위와 같이 폴더구조로 생성하도록 변경
+위와 같이 폴더구조로 생성하도록 변경  
+node-dir사용해보자
 <!-- - 폴더업로드시 디렉토리구조를 유지한채 업로드 -->
 <!-- - 입력(stdin)이 필요한경우, 실시간입력으로 변경 -->
 <!-- - socket.io를 활용한 실시간 bash환경 사용 -->
