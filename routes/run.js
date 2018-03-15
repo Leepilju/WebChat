@@ -33,22 +33,24 @@ router.post('/*', isAuthenticated, (req, res, next) => {
             fileCompile = 'python '+filePath;
             break;
         default:
-            res.send(new Error('실행불가능'));
+            res.send(new Error('실행불가능한파일 및 코드'));
     }
     
     // c, c++
+    // c와 c++의경우는 코드 실행전 컴파일이 필요하다.
     if(filePath.lastIndexOf('.c') !== -1 || filePath.lastIndexOf('.C') !== -1) {
-         // 컴파일후, 파일실행
+         // 컴파일부터 진행
          execa
         .shell(fileCompile)
         .then(result => {
+             // 컴파일이 완료된 경우, 파일을 실행한다.
              let run = execa(filePath.replace(path.extname(filePath), '.out'));
              run.stdin.write(stdin);
              run.stdin.end();
              return run;
-
         })
         .then(result => {
+            // 컴파일과, 실행을 정상적으로 실행하였다면, 컴파일된 파일을 삭제하여 사용자의 혼란을 방지한다.
             return new Promise((resolve, reject) => {
                 fs.unlink(filePath.replace(path.extname(filePath), '.out'), err => {
                     if(err) return reject(err);
@@ -57,10 +59,13 @@ router.post('/*', isAuthenticated, (req, res, next) => {
             });
         })
         .then(result => {
+            // 코드의 실행결과를 사용자가 볼 수 있도록 한다.
             res.send({result: result.stdout});
-         })
+        })
         .catch(err => {
-             res.send({result: err.stderr});
+             // 코드를 실행하며 ERROR 메시지를 사용자가 볼 수 있도록 리턴하여준다.
+             // 단, 서버내부의 구조를 모르게하기위하여 '/workspace/PIL/web/uploads/' 부분의 코드는 제거한다.            
+             res.send({result: err.stderr.replace(/\/workspace\/PIL\/web\/uploads\//gi, '')});
         });
     } else { // js, python
         let run = execa.shell(fileCompile);
@@ -71,7 +76,9 @@ router.post('/*', isAuthenticated, (req, res, next) => {
             res.send({result: result.stdout});
         })
         .catch(err => {
-            if(err) return res.send({result: err.stderr});
+            if(err) {
+                return res.send({result: err.stderr.replace(/\/workspace\/PIL\/web\/uploads\//gi, '')});
+            }
         });
     }
 });

@@ -4,9 +4,11 @@ module.exports = (dir) => {
     // 업로드 스토리지, 이름 관리
     const storage = multer.diskStorage({
         destination: (req, file, callback) => {
+            // 파일업로드 저장소
             callback(null, dir+'/uploads');
         },
         filename: (req, file, callback) => {
+            // 파일이름은 본래의 이름 그대로 저장한다.
             callback(null, file.originalname);
         }
     });
@@ -15,12 +17,12 @@ module.exports = (dir) => {
         storage: storage,
         fileFilter: (req, file, callback) => { 
             // mimetype에따른 필터
-            // c, c++, js, .tar, .zip 파일일경우만 정상적으로 작동하도록한다.
-            // 만약 원치않는 확장자를 가진 파일이 업로드 될 경우, 에러를 리턴한다.
+            // c, c++, js, python, .tar, .zip 파일일경우만 파일 업로드를 허용한다.
+            // 만약 원치않는 확장자(mimeType)를 가진 파일이 업로드 될 경우, 에러를 리턴한다.
             if(file.mimetype === 'application/x-tar' || file.mimetype === 'application/javascript' || file.mimetype === 'application/zip' || file.mimetype === 'application/js' || file.mimetype === 'text/plain' || file.mimetype === 'text/x-c' || file.mimetype === 'text/x-script.phyton') {
                 callback(null, true);
             } else {
-                callback(new Error('업로드가능파일은 소스코드, 압축파일(.tar, .zip)입니다.'), false);
+                callback(new Error('업로드가 가능한 파일은 소스파일(javascript, python, c/c++), 압축파일(.tar, .zip)입니다.'), false);
             }
         }
     });

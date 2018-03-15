@@ -1,3 +1,42 @@
 <h1><%= message %></h1>
-<h2><%= error.status %></h2>
-<pre><%= error.stack %></pre>
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>잘못된요청</title>
+        <link rel="stylesheet" href="/stylesheets/style.css" />
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+        <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script> 
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    </head>
+    <body>
+      <!-- 상단메뉴 -->
+         <nav class="navbar navbar-expand-sm bg-dark navbar-dark fixed-top">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a href="/" class="nav-link userID active" ><%= userid%></a>
+                </li>
+                <li class="nav-item">
+                    <a href="/chatting" class="nav-link">chatting</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/fileManager/list" class="nav-link">fileManager</a>
+                </li>
+                 <li class="nav-item">
+                    <a href="/signout" class="nav-link">signout</a>
+                </li>
+            </ul>
+        </nav>
+        
+        <div class="chat-box">
+            <div class="container-fluid chat">
+                <div id="chatLogs">
+                    <br>
+                    <%= err%>
+                </div>
+            </div>
+        </div>
+        
+    </body>
+</html>

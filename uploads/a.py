@@ -1,3 +1,34 @@
 print 'Hello World'
 a = input()
-print "input:", 
+print "input:", a
+print "input:", a
+print "input:", a
+print "input:", a
+print "input:", a
+print "input:", a
+print "input:", a
+print "input:", a
+print "input:", a
+print "input:", a
+print "input:", a
+print "input:", a
+print "input:", a
+print "input:", a
+print "input:", a
+print "input:", a
+print "input:", a
+print "input:", a
+print "input:", a
+print "input:", a
+print "input:", a
+print "input:", a
+print "input:", a
+print "input:", a
+print "input:", a
+print "input:", a
+print "input:", a
+print "input:", a
+print "input:", a
+print "input:", a
+print "input:", a
+  

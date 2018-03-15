@@ -57,7 +57,7 @@
                     <a href="/chatting" class="nav-link active">chatting</a>
                 </li>
                 <li class="nav-item">
-                    <a href="/fileManager" class="nav-link">fileManager</a>
+                    <a href="/fileManager/list" class="nav-link">fileManager</a>
                 </li>
                  <li class="nav-item">
                     <a href="/signout" class="nav-link">signout</a>
@@ -87,18 +87,25 @@
         // socket서버에 접속
         var socket = io();
         var userID = $(".userID").text();
-
+         
         // 본인의 정보를 서버로 전달
         socket.emit("login", {
-            id: userID
+            id: '<%= userid%>'
         });
 
         // 채팅방 입장시
         socket.on("login", function(data) {
-           // 내용추가
+            // 채팅방 입장사실을 추가하도록한다.
            $("#chatLogs").append("<div><strong>" + data + "</strong> 입장</div>");
         });
+         
+        // 사용자가 채팅방에서 나갈경우
+        socket.on('disconnect', (data) => {
+           // 어떤 사용자가 채팅방에서 나갔는지 추가하도록한다.
+           $("#chatLogs").append("<div><strong>" + data + "</strong> 나감 </div>");
+        });
 
+         
         /*
             채팅리시트는 로딩시 ajax를 통하여 불러오도록한다.
             시간에따른 오름차정렬, 전체메시지와, 본인이 보낸 메시지, 귓속말 받은 메시지를 불러오도록한다.

@@ -4,11 +4,12 @@
         <title><%= title %></title>
         <link rel="stylesheet" href="/stylesheets/style.css" />
         <link rel="stylesheet" href="/javascripts/codemirror/lib/codemirror.css">
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
         
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
         <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script> 
+        
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 
         <!-- codemirror -->
@@ -64,48 +65,40 @@
                     <a href="/chatting" class="nav-link">chatting</a>
                 </li>
                 <li class="nav-item">
-                    <a href="/fileManager" class="nav-link active">fileManager</a>
+                    <a href="/fileManager/list" class="nav-link active">fileManager</a>
                 </li>
                  <li class="nav-item">
                     <a href="/signout" class="nav-link">signout</a>
                 </li>
             </ul>
         </nav>
-        <!-- <div class="d-flex align-items-start">
-            <div><spen class="userID">사용자아이디나중에추가하자..</spen></div>
-            <div><a href="/chatting" class="abtn chattingBtn">chatting</a></div>
-            <div><a href="/fileManager" class="abtn fileManagerBtn">fileManager</a></div>
-            <div><a href="/signout">signout</a></div>
-        </div> -->
         
+        <div class="chat-box">
+            <div class="chat">
+                <form id="fileForm" action="/fileManager" method="post" enctype="multipart/form-data">
+                    <input type="file" name="files" id="files" multiple>
+                    <input type="submit">
+                </form>
+                <hr>
+                <% if(files) {%>
+                    <ul>
+                    <% files.forEach((file) => { %>
+                    <li><a class="files" href=""><%= file.replace('/workspace/PIL/web/uploads/', '') %></a></li> 
+                    <% }); %>
+                    </ul>
+                <% } else { %>
+                    <form id="codeForm">
+                        입력값: <input id="inputValue" type="text" placeholder="Input stdin 1, 2, 3"><br>
+                        <input type="submit" value="실행">
+                        <input id="saveCode" type="button" value="저장">                    
+                        <textarea id="codemirror-textarea"><%= file%></textarea>
+                    </form>
+                    <br>
+                    <textarea id="codemirror-textarea-result"></textarea>
+                <% } %>
+            </div>               
+        </div>
         
-<div class="chat-box">
-    <div class="chat">
-        <form id="fileForm" action="/fileManager" method="post" enctype="multipart/form-data">
-            <input type="file" name="files" id="files" multiple>
-            <input type="submit">
-        </form>
-        <hr>
-        <% if(files) {%>
-            <ul>
-            <% files.forEach((file) => { %>
-            <li><a class="files" href=""><%= file %></a></li> 
-            <% }); %>
-            </ul>
-            <% } else { %>
-            <form id="codeForm">
-                입력값: <input id="inputValue" type="text" placeholder="Input stdin 1, 2, 3"><br>
-                <input type="submit" value="실행">
-                <input id="saveCode" type="button" value="저장">                    
-                <input id="fileType" type="hidden" value="">
-                <textarea id="codemirror-textarea"><%= file%></textarea>
-            </form>
-            <br>
-            <textarea id="codemirror-textarea-result"></textarea>
-        <% } %>
-    </div>               
-</div>
-
     </body>
     <script>
         var filePath = [];
@@ -118,18 +111,17 @@
         $(".files").on("click", function(event) {
             event.preventDefault();
             // console.log($(location).attr('href')+$(this).text());
-            $(location).attr('href', url+'/'+$(this).text());
+            $(location).attr('href', url.replace('/list', '/') + $(this).text());
         });
         
         
         // 파일에따른 mode 변환
         var mode = '';
-        var fileType = $("#fileType");
         if (url.lastIndexOf('.c')) {
             mode = 'clike';
         } else if (url.lastIndexOf('.js')) {
             mode = 'javascript';
-        } else if (url.lastIndexOf('py')) {
+        } else if (url.lastIndexOf('.py')) {
             mode = 'python';
         } else {
             editor = "";
@@ -137,13 +129,14 @@
         
         
         // 파일일경우에만 코드미러를 적용
-        var fileCheck = "<%= fileType%>";
+        var files = "<%= files%>";
         // 코드의 내용
         var code = $("#codemirror-textarea");
         // 코드의 결과값
         var codeResult = $("#codemirror-textarea-result");
         
-        if(fileCheck == 'true') {
+        // 소스코드일경우 코드펜을 적용한다.
+        if(files.length == 0) {
             // 코드창
             var editor = CodeMirror.fromTextArea(code[0], {
                 lineNumbers: true,
@@ -174,8 +167,6 @@
         }
         
         
-        
-        
         // 코드실행결과
         $("#codeForm").submit(function(event) {
             event.preventDefault();
@@ -184,7 +175,7 @@
                 type: 'post',
                 url: url.replace('fileManager', 'run'),
                 data: {
-                    stdin: $('#inputValue').val()
+                    stdin: $('#inputValue').val() // 입력값을 함께보내도록한다.
                 },
                 success: function(result) {
                     resultEditor.getDoc().setValue("실행결과:\n"+result.result);
@@ -205,6 +196,7 @@
                 data: {code: editor.getValue()},
                 success: function(result) {
                     console.log(result.result);
+                    console.log("저장완료");
                 },
                 error: function(err) {
                     console.log("ERROR:", err);

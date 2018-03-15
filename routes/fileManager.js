@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 // 파일경로를 표시하기위하여 사용한 모듈
-const dir = require('node-dir').files;
+const dir = require('node-dir');
 
 const isAuthenticated = require('../middleware/isAuthenticated');
 const path = require('path');
@@ -14,47 +14,29 @@ const multer = require('../middleware/multer')(path.dirname(__dirname));
 function filePathFun(req) {
     return path.dirname(__dirname)+'/uploads'+ url.parse(req.originalUrl).pathname.replace('/fileManager', '');   
 }
+
 // 파일리스트
-// 업로드 내역중, 어떤파일과 어떤 리스트가 들어있는지 모르기때문에 와일드카드를 사용하여 응답결과를 다르게 보내주도록한다.
-router.get('/*', isAuthenticated, (req, res, next) => {
-    /*
-        실제 파일이 저장된 경로
-        프로젝트경로/uploads/url을통하여 받은 파일이름
-        ex) url: baseUrl/a.js 일경우
-            web/uploads/a.js 로 바꾸어준다
-    */
-    
-    // dir('../uploads', (err, result) => {
-    //     res.render('fileManager', {title: 'fileManager', userid: req.session.user.id, files: null, file: result, fileType: true});
-    // });
-    
-    const filePath = filePathFun(req);
-    fs.stat(filePath, (err, file) => {
-        if(err) return next(err);
-        fileCheck(file.isFile(), (err, result) => {
-            if (err) return next(err);
-            res.render('fileManager', Object.assign({title: 'fileManager', userid: req.session.user.id}, result));
-        });
+router.get('/list', isAuthenticated, (req, res, next) => {
+    dir.promiseFiles(path.dirname(__dirname)+'/uploads')
+    .then((files)=> {
+        res.render('fileManager', {title: 'fileManager', userid: req.session.user.id, files: files});
+    })
+    .catch(error => {
+        console.error(error);
+        return next(error);
     });
-    
-    // 파일인지 폴더인지 확인하여 결과값을 리턴해주는 콜백함수
-    function fileCheck(isFile, callback) {
-        if(isFile) {
-             // 파일일경우
-             fs.readFile(filePath, 'utf-8', (err, result) => {
-                if(err) return callback(err, null);
-                return callback(null, {files: null, file: result, fileType: true});
-            });
-        } else {
-            // 폴더일경우
-            fs.readdir(filePath, (err, result) => {
-                if(err) return callback(err, null);
-                return callback(null, {files: result, file: null, fileType: false});
-            });           
-        }
-    }
-    
 });
+
+// 코드보기
+router.get('/*', isAuthenticated, (req, res, next) => {
+    const filePath = filePathFun(req);
+    // 파일에 저장된 내용을 'utf-8'로 읽어와 클라이언트로 전송한다.
+    fs.readFile(filePath, 'utf-8', (err, content) => {
+        if (err) return next(err);
+        res.render('fileManager', {title: 'fileManager', userid: req.session.user.id, file: content, files: null});
+    });
+});
+
 
 //파일업로드
 router.post('/', isAuthenticated, multer.array('files'), (req, res, next) => {
@@ -62,7 +44,7 @@ router.post('/', isAuthenticated, multer.array('files'), (req, res, next) => {
     let files = req.files;
     let decompress = '';
     
-    // .zip, .tar 파일일경우에만 압축을 푼이후, 파일삭제를 진행하도록 한다.
+    // .zip, .tar 파일일경우에만 압축을 푼이후, 저장된 압축파일을 삭제하도록한다.
     files.forEach((file) => {
         if(file.mimetype === 'application/x-tar' || file.mimetype === 'application/zip') {
             switch(file.mimetype) {
@@ -73,14 +55,15 @@ router.post('/', isAuthenticated, multer.array('files'), (req, res, next) => {
                     decompress = 'unzip '+file.path +' -d ' + file.path.replace(path.basename(file.path), '');
                 break;
             }
+            // 파일의 압축을 풀도록한다.
             execa.shell(decompress)
             .then(result => {
+                // 압축풀기가 성공적으로 진행됬을 경우, 압축파일을 삭제하도록한다.
                 return execa.shell('rm -r '+file.path);
             })
             .then(result => {
             })
             .catch(err => {
-                console.error(err);
                 return next(err);
             });
         }

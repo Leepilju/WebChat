@@ -2,6 +2,8 @@ var Message = require('../models/Messages');
 module.exports.chat = (server) => {
     // http서버를 socket.io서버로 업그래이드
     let io = require('socket.io').listen(server);
+    
+    
     // 채팅사용자 관리를 위하여 생성
     let chatting = [];
     // 소켓서버 connection 성공시 Event Handler
@@ -13,6 +15,15 @@ module.exports.chat = (server) => {
             chatting[data.id] = socket.id;
             // 모두에게 채팅참여사실을 알려주도록 한다.
             io.emit('login', data.id);
+        });
+        
+        
+        // 소켓과 연결이 끊길경우(사용자가 채팅방에서 나갈경우)
+        socket.on('disconnect', (reason) => {
+            // 종료한 사용자의 아이디를 채팅방에 참여중인 목록에서 삭제한다.
+            delete chatting[socket.userName];
+            // 사용자의 아이디값을 클라이언트 소켓으로 전송한다.
+            io.emit('disconnect', socket.userName);
         });
 
         // 채팅메시지 수신
