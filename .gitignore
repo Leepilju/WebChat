@@ -4,3 +4,4 @@ codemirror/
 marked/
 npm-debug.log
 *.out
+config/

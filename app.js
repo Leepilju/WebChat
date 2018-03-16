@@ -4,7 +4,7 @@ const path = require('path');
 const logger = require('morgan');
 const bodyParser = require('body-parser');
 const session = require('express-session');
-
+const secretKey = require('./config/config').secretKey;
 const mongodb = require('./database/mongodb');
 
 const index = require('./routes/index');
@@ -28,8 +28,7 @@ app.set('view engine', 'ejs');
 app.set('port', process.env.PORT || 80);
 
 app.use(session({
-	// TODO: secret 수정사항
-	secret: 'secretKey',
+	secret: secretKey,
 	resave: false,
 	saveUninitialized: true
 }));

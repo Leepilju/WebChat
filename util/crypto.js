@@ -3,8 +3,6 @@ const crypto = require('crypto');
 
 /**
  * 임의문자열(salt)을 생성하여준다 
- * @function
- * @param {number} length - 임의문자열의 길이 
  */
 const genRandomString = length => {
     return crypto.randomBytes(Math.ceil(length/2)) //randomBytes 임의문자열을 생성해주도록한다.
@@ -14,7 +12,7 @@ const genRandomString = length => {
 
 
 /**
- * sha512로 해쉬화.
+ * sha512로 해쉬화
  * @function
  * @param {string} password - 사용자에게 받아온 비밀번호값
  * @param {string} salt - 만들어진 임의문자열

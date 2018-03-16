@@ -1,8 +1,7 @@
-var mongoose = require('mongoose');
-var host = 'mongodb://localhost:27017/test';
-
+const mongoose = require('mongoose');
+const host = require('../config/config').databaseHost;
 // 몽고디비 mongoose Connection
-var db = mongoose.connect(host, {
+const db = mongoose.connect(host, {
     poolSize: 5 // defult: 5
 }, (err) => {
     if (err) {
