@@ -1,5 +1,5 @@
 var Message = require('../models/Messages');
-module.exports.chat = (server) => {
+module.exports.chat = function(server) {
     // http서버를 socket.io서버로 업그래이드
     let io = require('socket.io').listen(server);
     
@@ -7,9 +7,9 @@ module.exports.chat = (server) => {
     // 채팅사용자 관리를 위하여 생성
     let chatting = [];
     // 소켓서버 connection 성공시 Event Handler
-    io.on('connection', (socket) => {
+    io.on('connection', function(socket) {
         // 채팅 참여시
-        socket.on('login', (data) => {
+        socket.on('login', function(data) {
             socket.userName = data.id;
             // 채팅참여시 사용자의 아이디값과, 소켓아이디값을 key-value 형태로 사용하기위함
             chatting[data.id] = socket.id;
@@ -19,7 +19,7 @@ module.exports.chat = (server) => {
         
         
         // 소켓과 연결이 끊길경우(사용자가 채팅방에서 나갈경우)
-        socket.on('disconnect', (reason) => {
+        socket.on('disconnect', function(reason) {
             // 종료한 사용자의 아이디를 채팅방에 참여중인 목록에서 삭제한다.
             delete chatting[socket.userName];
             // 사용자의 아이디값을 클라이언트 소켓으로 전송한다.
@@ -27,7 +27,7 @@ module.exports.chat = (server) => {
         });
 
         // 채팅메시지 수신
-        socket.on('chat', (data) => {
+        socket.on('chat', function(data) {
             // 채팅내용
             let msg = {
                 from: data.from,
@@ -36,7 +36,7 @@ module.exports.chat = (server) => {
             }; 
             
             // MongoDB에 채팅내역 저장
-            Message.create(msg, (err, result) => {
+            Message.create(msg, function(err, result) {
                 if (err) {
                     console.log("Save Message On mongoDB Fails...");
                 } else {

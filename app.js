@@ -57,10 +57,9 @@ app.use((err, req, res, next) => {
 
   res.status(err.status || 500);
     
-  // 404의경우에는 로그를 출력하지 않도록한다.
-  // if(err.status !== 404) console.log(err);
+  // 에러로그 출력
+  if(err.status !== 404) console.log(err);
   let userid = req.session.user ? req.session.user.id : 'Home';
-    
   res.render('error', {userid: userid || 'Home', err: err});
 });
 

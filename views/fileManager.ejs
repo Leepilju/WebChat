@@ -80,13 +80,13 @@
                     <input type="submit">
                 </form>
                 <hr>
-                <% if(files) {%>
+                <% if(files != null) {%>
                     <ul>
-                    <% files.forEach((file) => { %>
-                    <li><a class="files" href=""><%= file.replace('/workspace/PIL/web/uploads/', '') %></a></li> 
+                    <% files.forEach(function(file) { %>
+                        <li><a class="files" href="<%= file.replace('/workspace/PIL/web/uploads/', '') %>"><%= file.replace('/workspace/PIL/web/uploads/', '') %></a></li> 
                     <% }); %>
                     </ul>
-                <% } else { %>
+                <% } else if(type == 'source') { %>
                     <form id="codeForm">
                         입력값: <input id="inputValue" type="text" placeholder="Input stdin 1, 2, 3"><br>
                         <input type="submit" value="실행">
@@ -96,7 +96,7 @@
                     <br>
                     <textarea id="codemirror-textarea-result"></textarea>
                 <% } %>
-            </div>               
+            </div>
         </div>
         
     </body>
@@ -104,16 +104,6 @@
         var filePath = [];
         // 현재 url값
         var url = $(location).attr('href');
-        /*
-            클릭이벤트처리
-            폴더 클릭시 폴더로이동, 파일클릭시 파일의 내용을 보여주도록함.
-        */
-        $(".files").on("click", function(event) {
-            event.preventDefault();
-            // console.log($(location).attr('href')+$(this).text());
-            $(location).attr('href', url.replace('/list', '/') + $(this).text());
-        });
-        
         
         // 파일에따른 mode 변환
         var mode = '';
@@ -129,14 +119,15 @@
         
         
         // 파일일경우에만 코드미러를 적용
-        var files = "<%= files%>";
+        var type = "<%= type%>";
         // 코드의 내용
         var code = $("#codemirror-textarea");
         // 코드의 결과값
         var codeResult = $("#codemirror-textarea-result");
         
         // 소스코드일경우 코드펜을 적용한다.
-        if(files.length == 0) {
+        if(type == 'source') {
+            console.log(type);
             // 코드창
             var editor = CodeMirror.fromTextArea(code[0], {
                 lineNumbers: true,
@@ -195,7 +186,6 @@
                 dataType: 'json',
                 data: {code: editor.getValue()},
                 success: function(result) {
-                    console.log(result.result);
                     console.log("저장완료");
                 },
                 error: function(err) {

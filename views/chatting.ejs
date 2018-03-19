@@ -83,10 +83,10 @@
         
     </body>
     <script>
-     $(function() {
+     $(() => {
         // socket서버에 접속
-        var socket = io();
-        var userID = $(".userID").text();
+        const socket = io();
+        const userID = $(".userID").text();
          
         // 본인의 정보를 서버로 전달
         socket.emit("login", {
@@ -100,7 +100,7 @@
         });
          
         // 사용자가 채팅방에서 나갈경우
-        socket.on('disconnect', (data) => {
+        socket.on('disconnect', function(data) {
            // 어떤 사용자가 채팅방에서 나갔는지 추가하도록한다.
            $("#chatLogs").append("<div><strong>" + data + "</strong> 나감 </div>");
         });
@@ -117,12 +117,12 @@
             success: function(result) {
                 if(!result) $("#chatLogs").append("<div class='chat'><strong>채팅목록을 가지고오는데 실패</strong></div>");
                 else {
-                    result.forEach(function(element) {
+                    result.forEach(element => {
                         $("#chatLogs").append("<div>"+element.from+": " + element.message + ", to: " + element.to + "</div>");
                     });
                 }
             },
-            error: function(err) {
+            error: err => {
                 $("#chatLogs").append("<div><strong>채팅목록을 가지고오는데 실패</strong></div>");
             }
         });
@@ -139,11 +139,11 @@
             // 기본 폼태그의 이벤트를 사용하지않음
             event.preventDefault();
 
-            var msgForm = $("#msgForm");
-            var whisper = $("#whisper");
+            let msgForm = $("#msgForm");
+            let whisper = $("#whisper");
 
             // undefind && null 모두를 잡기위하여 == 사용
-            var msg = {
+            let msg = {
                 from: userID,
                 to: whisper.val() === '' || whisper == null ? 'ALL' : whisper.val(),
                 message: msgForm.val()
